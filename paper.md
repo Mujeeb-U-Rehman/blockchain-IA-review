@@ -1,7 +1,10 @@
 ---
 title: "Blockchain for Information Assurance: A Systematic Review of Security, Privacy, and Trust"
 author:
-  - "Mujeeb-U-Rehman"
+  - "Mujeeb U Rehman (2023558)"
+  - "M. Abdullah Khan (2023346)"
+  - "Muhammad Bin Waseem (2023403)"
+  - "Faizan Ali (2023192)"
 date: "2025-12-08"
 keywords:
   - Blockchain
