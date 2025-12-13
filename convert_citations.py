@@ -39,13 +39,8 @@ def convert_citations_to_numbered(doc_path, output_path=None):
         raise ValueError(f"Failed to load DOCX file: {e}")
     
     # Pattern to match author names followed by citation numbers
-    # This handles:
-    # - "Author et al. [N]"
-    # - "Author and Author [N]" 
-    # - "Author-Author et al. [N]" (hyphenated names like Ben-Sasson)
-    # - Single "Author [N]"
     # 
-    # Regex breakdown:
+    # Regex pattern breakdown:
     # \b                           - Word boundary
     # [A-Z][\w\-]+                 - Author name (capitalized, may have hyphens)
     # (?:                          - Non-capturing group for optional parts:
@@ -54,7 +49,9 @@ def convert_citations_to_numbered(doc_path, output_path=None):
     # )*                           - Zero or more times
     # \s*                          - Optional whitespace
     # \[(\d+)\]                    - Citation number in brackets (captured)
-    citation_pattern = r'\b[A-Z][\w\-]+(?:(?:\s+et\s+al\.|\s+and\s+[A-Z][\w\-]+))*\s*\[(\d+)\]'
+    citation_pattern = re.compile(
+        r'\b[A-Z][\w\-]+(?:(?:\s+et\s+al\.|\s+and\s+[A-Z][\w\-]+))*\s*\[(\d+)\]'
+    )
     
     changes_made = 0
     
@@ -63,27 +60,27 @@ def convert_citations_to_numbered(doc_path, output_path=None):
         original_text = para.text
         
         # Check if this paragraph needs changes
-        if not re.search(citation_pattern, original_text):
+        if not citation_pattern.search(original_text):
             continue
         
-        # For simple cases (single run, no formatting), use simple replacement
-        if len(para.runs) <= 1:
-            new_text = re.sub(citation_pattern, r'[\1]', original_text)
-            if new_text != original_text:
-                changes_made += 1
-                para.clear()
-                para.add_run(new_text)
-        else:
-            # For complex cases with multiple runs, preserve formatting
-            # This is more complex but preserves all run-level formatting
-            new_text = re.sub(citation_pattern, r'[\1]', original_text)
-            if new_text != original_text:
-                changes_made += 1
-                # Note: For complex formatting preservation, we'd need to track
-                # which runs contain which parts of the text. For this document,
-                # all paragraphs have simple structure, so simple replacement works.
-                para.clear()
-                para.add_run(new_text)
+        # Replace author citations with just the number
+        new_text = citation_pattern.sub(r'[\1]', original_text)
+        
+        if new_text != original_text:
+            changes_made += 1
+            
+            # NOTE: This implementation uses simple text replacement which works well
+            # for paragraphs with uniform formatting (single run or consistent formatting).
+            # For documents with complex run-level formatting (bold/italic within citations),
+            # a more sophisticated approach would be needed to preserve formatting at the
+            # character level. The current target document has simple formatting, so this
+            # approach is sufficient.
+            if len(para.runs) > 1:
+                print(f"  Warning: Paragraph {i} has {len(para.runs)} runs. "
+                      f"Run-level formatting may be lost.")
+            
+            para.clear()
+            para.add_run(new_text)
     
     # Save the document
     if output_path is None:
