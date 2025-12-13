@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies (Pandoc, TeX, Python)
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended lmodern python3 python3-pip curl
+          sudo apt-get install -y pandoc texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-xetex texlive-publishers lmodern python3 python3-pip curl
           pip3 install python-docx
 
       - name: Fetch IEEE CSL
@@ -32,6 +32,7 @@ jobs:
             -V numbersections \
             --bibliography=references.bib \
             --csl=ieee.csl \
+            --citeproc \
             -o Blockchain_Information_Assurance_Review.pdf
 
       - name: Build DOCX (pre-style)
@@ -40,11 +41,12 @@ jobs:
             --from=markdown \
             --bibliography=references.bib \
             --csl=ieee.csl \
+            --citeproc \
             -o Blockchain_Information_Assurance_Review.docx
 
       - name: Post-process DOCX to apply two columns and fonts
         run: |
-          python3 scripts/postprocess_docx.py Blockchain_Information_Assurance_Review.docx
+          python3 postprocess_docx.py Blockchain_Information_Assurance_Review.docx
 
       - name: Commit generated artifacts
         run: |
