@@ -22,7 +22,7 @@ def set_margins(section, top=0.75, bottom=1.0, left=0.625, right=0.625):
     section.left_margin = Inches(left)
     section.right_margin = Inches(right)
 
-def set_base_font(doc, name="Times New Roman", size_pt=10):
+def set_base_font(doc, name="Times New Roman", size_pt=11):
     style = doc.styles['Normal']
     font = style.font
     font.name = name
@@ -47,7 +47,7 @@ def main(path):
     set_margins(first)
     set_two_columns(first, space_inches=0.2)
     # Set base and heading fonts
-    set_base_font(doc, "Times New Roman", 10)
+    set_base_font(doc, "Times New Roman", 11)
     set_heading_fonts(doc, "Times New Roman")
     # Ensure no extra spacing after paragraphs
     for p in doc.paragraphs:
