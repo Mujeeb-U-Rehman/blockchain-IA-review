@@ -39,6 +39,7 @@ def format_document(doc_path, output_path=None):
     - Proper heading fonts
     - Two-column layout
     - IEEE margins
+    - Center-align images/diagrams
     """
     doc = Document(doc_path)
     
@@ -73,6 +74,18 @@ def format_document(doc_path, output_path=None):
         if para.paragraph_format.space_after:
             para.paragraph_format.space_after = Pt(0)
         
+        # Check if paragraph contains an image
+        has_image = False
+        for run in para.runs:
+            if 'graphicData' in run._element.xml:
+                has_image = True
+                break
+        
+        # Center-align paragraphs with images
+        if has_image:
+            from docx.enum.text import WD_ALIGN_PARAGRAPH
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        
         # Apply Times New Roman 11pt to all runs that don't have explicit formatting
         for run in para.runs:
             if not run.font.name or run.font.name == 'Calibri':
@@ -86,6 +99,9 @@ def format_document(doc_path, output_path=None):
     
     doc.save(output_path)
     print(f"Document formatted successfully: {output_path}")
+    print(f"  - Applied Times New Roman 11pt font")
+    print(f"  - Set two-column IEEE layout")
+    print(f"  - Centered images/diagrams")
     return True
 
 if __name__ == "__main__":
