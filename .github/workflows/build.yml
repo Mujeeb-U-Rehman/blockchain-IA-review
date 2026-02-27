@@ -1,0 +1,55 @@
+name: Build IEEE PDF and DOCX
+
+on:
+  push:
+    branches: [ "ieee-artifacts" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Pandoc, TeX, Python)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended lmodern python3 python3-pip curl
+          pip3 install python-docx
+
+      - name: Fetch IEEE CSL
+        run: |
+          curl -L -o ieee.csl https://www.zotero.org/styles/ieee
+
+      - name: Build PDF (IEEE two-column)
+        run: |
+          pandoc paper.md \
+            --from=markdown \
+            --pdf-engine=xelatex \
+            -V documentclass=IEEEtran \
+            -V classoption=conference \
+            -V numbersections \
+            --bibliography=references.bib \
+            --csl=ieee.csl \
+            -o Blockchain_Information_Assurance_Review.pdf
+
+      - name: Build DOCX (pre-style)
+        run: |
+          pandoc paper.md \
+            --from=markdown \
+            --bibliography=references.bib \
+            --csl=ieee.csl \
+            -o Blockchain_Information_Assurance_Review.docx
+
+      - name: Post-process DOCX to apply two columns and fonts
+        run: |
+          python3 scripts/postprocess_docx.py Blockchain_Information_Assurance_Review.docx
+
+      - name: Commit generated artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Blockchain_Information_Assurance_Review.pdf Blockchain_Information_Assurance_Review.docx ieee.csl
+          git commit -m "Add generated IEEE PDF and two-column DOCX" || echo "No changes to commit"
+          git push
